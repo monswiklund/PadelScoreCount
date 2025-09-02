@@ -34,3 +34,11 @@ val greyGradient = Brush.verticalGradient(
         Color(0xFF787878)   // Ljusare grå
     )
 )
+
+// Skapar en horisontell gradient från röd till blå, för full-screen övergång
+val horizontalRedToBlueGradient = Brush.verticalGradient(
+    colors = listOf(
+        Color(0xFFFF4500), // Röd på toppen
+        Color(0xFF3372E0)  // Blå på botten
+    )
+)
