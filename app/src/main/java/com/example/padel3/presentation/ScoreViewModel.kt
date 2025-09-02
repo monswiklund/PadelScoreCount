@@ -242,7 +242,7 @@ class ScoreViewModel : ViewModel() {
     fun setGameMode(mode: GameMode) {
         _gameMode.value = mode
         _showModeSelector.value = false
-        resetMatch()
+        resetMatch(showModeSelector = false)
     }
     
     // Sätt matchgräns för Mexicano
@@ -254,8 +254,10 @@ class ScoreViewModel : ViewModel() {
     private fun checkMexicanoMatchEnd() {
         val totalPoints = _playerOneScore.value + _playerTwoScore.value
         if (totalPoints >= _mexicanoMatchLimit.value) {
-            // Match är slut - behöver inte göra något särskilt
-            // Användaren kan trycka reset för ny match
+            // Auto-reset för ny match - behåll historiken för undo
+            _playerOneScore.value = POINTS_INITIAL
+            _playerTwoScore.value = POINTS_INITIAL
+            _canUndo.value = _stateHistory.isNotEmpty()
         }
     }
 
@@ -290,7 +292,7 @@ class ScoreViewModel : ViewModel() {
         _playerTwoScore.value = POINTS_INITIAL
     }
 
-    fun resetMatch() {
+    fun resetMatch(showModeSelector: Boolean = true) {
         saveCurrentStateToHistory()
 
         _playerOneScore.value = POINTS_INITIAL
@@ -304,8 +306,8 @@ class ScoreViewModel : ViewModel() {
         _playerTwoTieBreakPoints.value = 0
         _isPlayerOneServing.value = true
         
-        // Visa mode-väljaren igen så användaren kan välja nytt läge
-        _showModeSelector.value = true
+        // Visa mode-väljaren igen endast om det begärts
+        _showModeSelector.value = showModeSelector
 
         _stateHistory.clear()
         _canUndo.value = false
