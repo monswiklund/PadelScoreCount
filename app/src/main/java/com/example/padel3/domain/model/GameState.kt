@@ -15,7 +15,8 @@ data class GameState(
     val mexicanoMatchLimit: Int = 24,
     val showModeSelector: Boolean = true,
     val showServeSelector: Boolean = false,
-    val canUndo: Boolean = false
+    val canUndo: Boolean = false,
+    val gameWinSequence: List<Boolean> = emptyList() // true = player 1 won, false = player 2 won
 ) {
     companion object {
         const val POINTS_INITIAL = 0

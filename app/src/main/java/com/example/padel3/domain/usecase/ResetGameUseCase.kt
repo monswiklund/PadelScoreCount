@@ -5,10 +5,25 @@ import com.example.padel3.domain.model.GameState
 class ResetGameUseCase {
     
     fun resetGame(currentState: GameState): GameState {
-        return currentState.copy(
-            playerOneScore = GameState.POINTS_INITIAL,
-            playerTwoScore = GameState.POINTS_INITIAL
-        )
+        // Only reset gems if both scores are 0-0 initially (meaning we're resetting from 0-0)
+        val shouldResetGems = currentState.playerOneScore == 0 && currentState.playerTwoScore == 0
+        
+        return if (shouldResetGems) {
+            currentState.copy(
+                playerOneScore = GameState.POINTS_INITIAL,
+                playerTwoScore = GameState.POINTS_INITIAL,
+                playerOneGamesWon = 0,
+                playerTwoGamesWon = 0,
+                playerOneSetsWon = 0,
+                playerTwoSetsWon = 0,
+                gameWinSequence = emptyList()
+            )
+        } else {
+            currentState.copy(
+                playerOneScore = GameState.POINTS_INITIAL,
+                playerTwoScore = GameState.POINTS_INITIAL
+            )
+        }
     }
     
     fun resetMatch(currentState: GameState, showModeSelector: Boolean = true): GameState {
@@ -25,13 +40,17 @@ class ResetGameUseCase {
             isPlayerOneServing = true,
             showModeSelector = showModeSelector,
             showServeSelector = false,
-            canUndo = false
+            canUndo = false,
+            gameWinSequence = emptyList()
         )
     }
     
     fun setGameMode(currentState: GameState, mode: com.example.padel3.domain.model.GameMode): GameState {
         val resetState = resetMatch(currentState, showModeSelector = false)
-        return resetState.copy(gameMode = mode)
+        return resetState.copy(
+            gameMode = mode,
+            showServeSelector = mode == com.example.padel3.domain.model.GameMode.VINNARBANA
+        )
     }
     
     fun setMexicanoLimit(currentState: GameState, limit: Int): GameState {

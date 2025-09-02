@@ -51,7 +51,8 @@ class IncrementScoreUseCase {
         val updatedState = state.copy(
             playerOneTieBreakPoints = newPlayerOneTieBreak,
             playerTwoTieBreakPoints = newPlayerTwoTieBreak,
-            isPlayerOneServing = if (shouldSwitchServer) !state.isPlayerOneServing else state.isPlayerOneServing
+            isPlayerOneServing = if (shouldSwitchServer) !state.isPlayerOneServing else state.isPlayerOneServing,
+            gameWinSequence = state.gameWinSequence + isPlayerOne
         )
         
         // Check for tiebreak win
@@ -88,7 +89,9 @@ class IncrementScoreUseCase {
             playerOneScore = GameState.POINTS_INITIAL,
             playerTwoScore = GameState.POINTS_INITIAL,
             playerOneGamesWon = newPlayerOneGames,
-            playerTwoGamesWon = newPlayerTwoGames
+            playerTwoGamesWon = newPlayerTwoGames,
+            gameWinSequence = state.gameWinSequence + isPlayerOne,
+            isPlayerOneServing = !state.isPlayerOneServing // Alternate serve every game
         )
         
         return checkAndProcessSetWin(gameResetState, isPlayerOne)
@@ -110,7 +113,8 @@ class IncrementScoreUseCase {
                 isTieBreak = false,
                 playerOneTieBreakPoints = 0,
                 playerTwoTieBreakPoints = 0,
-                showServeSelector = false
+                showServeSelector = false,
+                gameWinSequence = emptyList()
             )
         } else if (!isPlayerOne && player2Points >= winningPoints && (player2Points - player1Points) >= minDifference) {
             // Player 2 wins tiebreak
@@ -121,7 +125,8 @@ class IncrementScoreUseCase {
                 isTieBreak = false,
                 playerOneTieBreakPoints = 0,
                 playerTwoTieBreakPoints = 0,
-                showServeSelector = false
+                showServeSelector = false,
+                gameWinSequence = emptyList()
             )
         }
         
@@ -147,7 +152,8 @@ class IncrementScoreUseCase {
             return state.copy(
                 playerOneSetsWon = state.playerOneSetsWon + 1,
                 playerOneGamesWon = 0,
-                playerTwoGamesWon = 0
+                playerTwoGamesWon = 0,
+                gameWinSequence = emptyList()
             )
         } else if (!isPlayerOne &&
             state.playerTwoGamesWon >= gamesNeeded &&
@@ -156,7 +162,8 @@ class IncrementScoreUseCase {
             return state.copy(
                 playerTwoSetsWon = state.playerTwoSetsWon + 1,
                 playerOneGamesWon = 0,
-                playerTwoGamesWon = 0
+                playerTwoGamesWon = 0,
+                gameWinSequence = emptyList()
             )
         }
         
