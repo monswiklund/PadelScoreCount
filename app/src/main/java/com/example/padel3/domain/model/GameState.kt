@@ -22,8 +22,10 @@ data class GameState(
     val scoringVariant: ScoringVariant = ScoringVariant.ADVANTAGE,
     val isDeuceState: Boolean = false,
     val playerOneHasAdvantage: Boolean? = null, // null = no advantage, true = P1, false = P2
-    val showModeSelector: Boolean = true,
+    val showMainMenu: Boolean = true,
+    val showModeSelector: Boolean = false,
     val showServeSelector: Boolean = false,
+    val showMatchHistory: Boolean = false,
     val canUndo: Boolean = false,
     val gameWinSequence: List<Boolean> = emptyList() // true = player 1 won, false = player 2 won
 ) {
