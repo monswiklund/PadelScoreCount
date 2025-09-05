@@ -17,10 +17,10 @@ class IncrementScoreUseCase {
             return handleTieBreakIncrement(state, isPlayerOne)
         }
         
-        val (playerScore, otherPlayerScore) = if (isPlayerOne) {
-            state.playerOneScore to state.playerTwoScore
+        val playerScore = if (isPlayerOne) {
+            state.playerOneScore
         } else {
-            state.playerTwoScore to state.playerOneScore
+            state.playerTwoScore
         }
         
         val newScore = when (playerScore) {
@@ -60,25 +60,20 @@ class IncrementScoreUseCase {
     }
     
     private fun handleMexicanoScoringIncrement(state: GameState, isPlayerOne: Boolean): GameState {
+        val currentTotal = state.playerOneScore + state.playerTwoScore
+        
+        // Don't allow scoring if already at or beyond match limit
+        if (currentTotal >= state.mexicanoMatchLimit) {
+            return state
+        }
+        
         val newPlayerOneScore = if (isPlayerOne) state.playerOneScore + 1 else state.playerOneScore
         val newPlayerTwoScore = if (isPlayerOne) state.playerTwoScore else state.playerTwoScore + 1
         
-        val totalPoints = newPlayerOneScore + newPlayerTwoScore
-        
-        val updatedState = state.copy(
+        return state.copy(
             playerOneScore = newPlayerOneScore,
             playerTwoScore = newPlayerTwoScore
         )
-        
-        // Auto-reset if match limit reached
-        return if (totalPoints >= state.mexicanoMatchLimit) {
-            updatedState.copy(
-                playerOneScore = GameState.POINTS_INITIAL,
-                playerTwoScore = GameState.POINTS_INITIAL
-            )
-        } else {
-            updatedState
-        }
     }
     
     private fun awardGame(state: GameState, isPlayerOne: Boolean): GameState {
@@ -106,26 +101,28 @@ class IncrementScoreUseCase {
         
         if (isPlayerOne && player1Points >= winningPoints && (player1Points - player2Points) >= minDifference) {
             // Player 1 wins tiebreak
+            val newPlayerOneSets = state.playerOneSetsWon + 1
             return state.copy(
-                playerOneSetsWon = state.playerOneSetsWon + 1,
+                playerOneSetsWon = newPlayerOneSets,
                 playerOneGamesWon = 0,
                 playerTwoGamesWon = 0,
                 isTieBreak = false,
                 playerOneTieBreakPoints = 0,
                 playerTwoTieBreakPoints = 0,
-                showServeSelector = false,
+                showServeSelector = if (newPlayerOneSets >= state.setsToWinMatch) false else false,
                 gameWinSequence = emptyList()
             )
         } else if (!isPlayerOne && player2Points >= winningPoints && (player2Points - player1Points) >= minDifference) {
             // Player 2 wins tiebreak
+            val newPlayerTwoSets = state.playerTwoSetsWon + 1
             return state.copy(
-                playerTwoSetsWon = state.playerTwoSetsWon + 1,
+                playerTwoSetsWon = newPlayerTwoSets,
                 playerOneGamesWon = 0,
                 playerTwoGamesWon = 0,
                 isTieBreak = false,
                 playerOneTieBreakPoints = 0,
                 playerTwoTieBreakPoints = 0,
-                showServeSelector = false,
+                showServeSelector = if (newPlayerTwoSets >= state.setsToWinMatch) false else false,
                 gameWinSequence = emptyList()
             )
         }
@@ -149,21 +146,25 @@ class IncrementScoreUseCase {
             state.playerOneGamesWon >= gamesNeeded &&
             state.playerOneGamesWon - state.playerTwoGamesWon >= minDifference) {
             // Player 1 wins set
+            val newPlayerOneSets = state.playerOneSetsWon + 1
             return state.copy(
-                playerOneSetsWon = state.playerOneSetsWon + 1,
+                playerOneSetsWon = newPlayerOneSets,
                 playerOneGamesWon = 0,
                 playerTwoGamesWon = 0,
-                gameWinSequence = emptyList()
+                gameWinSequence = emptyList(),
+                showServeSelector = if (newPlayerOneSets >= state.setsToWinMatch) false else false
             )
         } else if (!isPlayerOne &&
             state.playerTwoGamesWon >= gamesNeeded &&
             state.playerTwoGamesWon - state.playerOneGamesWon >= minDifference) {
             // Player 2 wins set
+            val newPlayerTwoSets = state.playerTwoSetsWon + 1
             return state.copy(
-                playerTwoSetsWon = state.playerTwoSetsWon + 1,
+                playerTwoSetsWon = newPlayerTwoSets,
                 playerOneGamesWon = 0,
                 playerTwoGamesWon = 0,
-                gameWinSequence = emptyList()
+                gameWinSequence = emptyList(),
+                showServeSelector = if (newPlayerTwoSets >= state.setsToWinMatch) false else false
             )
         }
         

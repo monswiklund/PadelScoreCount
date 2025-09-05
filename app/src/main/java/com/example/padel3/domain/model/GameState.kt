@@ -13,6 +13,7 @@ data class GameState(
     val isPlayerOneServing: Boolean = true,
     val gameMode: GameMode = GameMode.VINNARBANA,
     val mexicanoMatchLimit: Int = 24,
+    val setsToWinMatch: Int = 1,
     val showModeSelector: Boolean = true,
     val showServeSelector: Boolean = false,
     val canUndo: Boolean = false,
@@ -27,6 +28,8 @@ data class GameState(
         const val GAMES_TO_WIN_SET = 6
         const val MIN_GAME_DIFFERENCE = 2
         const val SETS_TO_WIN_MATCH = 3
+        const val MIN_SETS_TO_WIN = 1
+        const val MAX_SETS_TO_WIN = 6
 
         const val TIEBREAK_POINTS_TO_WIN = 7
         const val TIEBREAK_MIN_POINT_DIFFERENCE = 2

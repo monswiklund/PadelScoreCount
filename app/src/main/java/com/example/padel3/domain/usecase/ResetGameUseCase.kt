@@ -63,4 +63,9 @@ class ResetGameUseCase {
             showServeSelector = false
         )
     }
+    
+    fun setSetsToWinMatch(currentState: GameState, sets: Int): GameState {
+        val clampedSets = sets.coerceIn(GameState.MIN_SETS_TO_WIN, GameState.MAX_SETS_TO_WIN)
+        return currentState.copy(setsToWinMatch = clampedSets)
+    }
 }

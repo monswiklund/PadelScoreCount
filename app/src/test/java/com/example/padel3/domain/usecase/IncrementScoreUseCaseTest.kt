@@ -110,7 +110,7 @@ class IncrementScoreUseCaseTest {
     }
 
     @Test
-    fun `auto reset when Mexicano match limit reached`() {
+    fun `stop scoring when Mexicano match limit reached`() {
         // Given
         val initialState = GameState(
             playerOneScore = 12,
@@ -122,8 +122,26 @@ class IncrementScoreUseCaseTest {
         // When
         val result = useCase.execute(initialState, isPlayerOne = true)
 
-        // Then - Should auto reset since total (13 + 11 = 24) reaches limit
-        assertEquals(0, result.playerOneScore)
-        assertEquals(0, result.playerTwoScore)
+        // Then - Should reach limit but not reset automatically
+        assertEquals(13, result.playerOneScore)
+        assertEquals(11, result.playerTwoScore)
+    }
+
+    @Test
+    fun `prevent scoring beyond Mexicano match limit`() {
+        // Given
+        val initialState = GameState(
+            playerOneScore = 12,
+            playerTwoScore = 12,
+            gameMode = GameMode.MEXICANO,
+            mexicanoMatchLimit = 24
+        )
+
+        // When
+        val result = useCase.execute(initialState, isPlayerOne = true)
+
+        // Then - Should not increment score since total is already at limit
+        assertEquals(12, result.playerOneScore)
+        assertEquals(12, result.playerTwoScore)
     }
 }
