@@ -106,7 +106,7 @@ class ScoreViewModelTest {
         `when`(mockResetGameUseCase.resetGame(any())).thenReturn(expectedState)
 
         // When
-        viewModel.resetGame()
+        viewModel.requestResetGame()
         testDispatcher.scheduler.advanceUntilIdle()
 
         // Then

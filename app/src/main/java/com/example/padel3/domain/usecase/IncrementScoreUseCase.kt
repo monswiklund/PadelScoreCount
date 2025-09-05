@@ -143,10 +143,13 @@ class IncrementScoreUseCase {
         val minDifference = GameState.TIEBREAK_MIN_POINT_DIFFERENCE
         
         if (isPlayerOne && player1Points >= winningPoints && (player1Points - player2Points) >= minDifference) {
-            // Player 1 wins tiebreak
+            // Player 1 wins tiebreak — set recorded as 7–6
             val newPlayerOneSets = state.playerOneSetsWon + 1
             return state.copy(
                 playerOneSetsWon = newPlayerOneSets,
+                // store last completed set result for history display
+                lastCompletedSetP1Games = 7,
+                lastCompletedSetP2Games = 6,
                 playerOneGamesWon = 0,
                 playerTwoGamesWon = 0,
                 isTieBreak = false,
@@ -156,10 +159,13 @@ class IncrementScoreUseCase {
                 gameWinSequence = emptyList()
             )
         } else if (!isPlayerOne && player2Points >= winningPoints && (player2Points - player1Points) >= minDifference) {
-            // Player 2 wins tiebreak
+            // Player 2 wins tiebreak — set recorded as 6–7
             val newPlayerTwoSets = state.playerTwoSetsWon + 1
             return state.copy(
                 playerTwoSetsWon = newPlayerTwoSets,
+                // store last completed set result for history display
+                lastCompletedSetP1Games = 6,
+                lastCompletedSetP2Games = 7,
                 playerOneGamesWon = 0,
                 playerTwoGamesWon = 0,
                 isTieBreak = false,
@@ -188,10 +194,12 @@ class IncrementScoreUseCase {
         if (isPlayerOne &&
             state.playerOneGamesWon >= gamesNeeded &&
             state.playerOneGamesWon - state.playerTwoGamesWon >= minDifference) {
-            // Player 1 wins set
+            // Player 1 wins set — capture final games before resetting
             val newPlayerOneSets = state.playerOneSetsWon + 1
             return state.copy(
                 playerOneSetsWon = newPlayerOneSets,
+                lastCompletedSetP1Games = state.playerOneGamesWon,
+                lastCompletedSetP2Games = state.playerTwoGamesWon,
                 playerOneGamesWon = 0,
                 playerTwoGamesWon = 0,
                 gameWinSequence = emptyList(),
@@ -200,10 +208,12 @@ class IncrementScoreUseCase {
         } else if (!isPlayerOne &&
             state.playerTwoGamesWon >= gamesNeeded &&
             state.playerTwoGamesWon - state.playerOneGamesWon >= minDifference) {
-            // Player 2 wins set
+            // Player 2 wins set — capture final games before resetting
             val newPlayerTwoSets = state.playerTwoSetsWon + 1
             return state.copy(
                 playerTwoSetsWon = newPlayerTwoSets,
+                lastCompletedSetP1Games = state.playerOneGamesWon,
+                lastCompletedSetP2Games = state.playerTwoGamesWon,
                 playerOneGamesWon = 0,
                 playerTwoGamesWon = 0,
                 gameWinSequence = emptyList(),

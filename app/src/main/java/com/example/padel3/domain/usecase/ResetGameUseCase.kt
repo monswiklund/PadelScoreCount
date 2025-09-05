@@ -16,7 +16,10 @@ class ResetGameUseCase {
                 playerTwoGamesWon = 0,
                 playerOneSetsWon = 0,
                 playerTwoSetsWon = 0,
-                gameWinSequence = emptyList()
+                gameWinSequence = emptyList(),
+                // Clear last completed set snapshot when resetting everything
+                lastCompletedSetP1Games = 0,
+                lastCompletedSetP2Games = 0
             )
         } else {
             currentState.copy(
@@ -41,7 +44,10 @@ class ResetGameUseCase {
             showModeSelector = showModeSelector,
             showServeSelector = false,
             canUndo = false,
-            gameWinSequence = emptyList()
+            gameWinSequence = emptyList(),
+            // Clear last completed set snapshot for new match
+            lastCompletedSetP1Games = 0,
+            lastCompletedSetP2Games = 0
         )
     }
     

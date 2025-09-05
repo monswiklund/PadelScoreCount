@@ -1,8 +1,16 @@
 package com.example.padel3.domain.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 enum class ScoringVariant {
     ADVANTAGE,    // Traditional advantage scoring
     GOLDEN_POINT  // Sudden death at deuce
+}
+
+enum class ResetAction {
+    RESET_GAME,   // Reset current game only
+    RESET_MATCH   // Reset entire match
 }
 
 data class GameState(
@@ -26,8 +34,13 @@ data class GameState(
     val showModeSelector: Boolean = false,
     val showServeSelector: Boolean = false,
     val showMatchHistory: Boolean = false,
+    val showSaveConfirmationDialog: Boolean = false,
+    val pendingResetAction: ResetAction? = null,
     val canUndo: Boolean = false,
-    val gameWinSequence: List<Boolean> = emptyList() // true = player 1 won, false = player 2 won
+    val gameWinSequence: List<Boolean> = emptyList(), // true = player 1 won, false = player 2 won
+    // New: remember last completed set’s final games so history can show them
+    val lastCompletedSetP1Games: Int = 0,
+    val lastCompletedSetP2Games: Int = 0
 ) {
     companion object {
         const val POINTS_INITIAL = 0

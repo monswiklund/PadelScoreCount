@@ -10,13 +10,15 @@ class SaveMatchUseCase(
     suspend fun execute(
         gameState: GameState, 
         matchDurationSeconds: Long = 0,
-        isMatchCompleted: Boolean = false
+        isMatchCompleted: Boolean = false,
+        matchSessionId: String? = null
     ): Result<Unit> {
         return try {
             val matchHistory = MatchHistory.fromGameState(
                 gameState = gameState,
                 matchDurationSeconds = matchDurationSeconds,
-                isMatchCompleted = isMatchCompleted
+                isMatchCompleted = isMatchCompleted,
+                matchSessionId = matchSessionId
             )
             matchHistoryRepository.saveMatch(matchHistory)
             Result.success(Unit)

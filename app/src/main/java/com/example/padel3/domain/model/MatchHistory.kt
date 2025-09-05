@@ -1,3 +1,8 @@
+@file:OptIn(
+    kotlinx.serialization.ExperimentalSerializationApi::class,
+    kotlinx.serialization.InternalSerializationApi::class
+)
+
 package com.example.padel3.domain.model
 
 import kotlinx.serialization.Serializable
@@ -18,13 +23,18 @@ data class MatchHistory(
     val scoringVariant: ScoringVariant = ScoringVariant.ADVANTAGE,
     val matchDurationSeconds: Long = 0,
     val isMatchCompleted: Boolean = false,
-    val winnerIsPlayerOne: Boolean? = null // null if no winner or match incomplete
+    val winnerIsPlayerOne: Boolean? = null, // null if no winner or match incomplete
+    val matchSessionId: String = "", // groups multiple saves of the same match
+    // New: track last completed set games to avoid showing 0-0 right after set ends
+    val lastCompletedSetP1Games: Int = 0,
+    val lastCompletedSetP2Games: Int = 0
 ) {
     companion object {
         fun fromGameState(
             gameState: GameState,
             matchDurationSeconds: Long = 0,
-            isMatchCompleted: Boolean = false
+            isMatchCompleted: Boolean = false,
+            matchSessionId: String? = null
         ): MatchHistory {
             val winnerIsPlayerOne = when {
                 !isMatchCompleted -> null
@@ -37,9 +47,11 @@ data class MatchHistory(
                 else -> null
             }
 
+            val now = System.currentTimeMillis()
+            val id = now.toString()
             return MatchHistory(
-                id = System.currentTimeMillis().toString(),
-                date = System.currentTimeMillis(),
+                id = id,
+                date = now,
                 gameMode = gameState.gameMode,
                 playerOneScore = gameState.playerOneScore,
                 playerTwoScore = gameState.playerTwoScore,
@@ -52,7 +64,10 @@ data class MatchHistory(
                 scoringVariant = gameState.scoringVariant,
                 matchDurationSeconds = matchDurationSeconds,
                 isMatchCompleted = isMatchCompleted,
-                winnerIsPlayerOne = winnerIsPlayerOne
+                winnerIsPlayerOne = winnerIsPlayerOne,
+                matchSessionId = matchSessionId ?: id, // fallback ensures old entries still group uniquely
+                lastCompletedSetP1Games = gameState.lastCompletedSetP1Games,
+                lastCompletedSetP2Games = gameState.lastCompletedSetP2Games
             )
         }
     }
@@ -61,10 +76,15 @@ data class MatchHistory(
         return when (gameMode) {
             GameMode.MEXICANO -> "$playerOneScore - $playerTwoScore"
             GameMode.VINNARBANA -> {
+                val displayP1Games = if (playerOneGamesWon == 0 && playerTwoGamesWon == 0 &&
+                    (lastCompletedSetP1Games > 0 || lastCompletedSetP2Games > 0)) lastCompletedSetP1Games else playerOneGamesWon
+                val displayP2Games = if (playerOneGamesWon == 0 && playerTwoGamesWon == 0 &&
+                    (lastCompletedSetP1Games > 0 || lastCompletedSetP2Games > 0)) lastCompletedSetP2Games else playerTwoGamesWon
+
                 if (playerOneSetsWon > 0 || playerTwoSetsWon > 0) {
-                    "Sets: $playerOneSetsWon - $playerTwoSetsWon, Games: $playerOneGamesWon - $playerTwoGamesWon"
+                    "Sets: $playerOneSetsWon - $playerTwoSetsWon\nGames: $displayP1Games - $displayP2Games"
                 } else {
-                    "Games: $playerOneGamesWon - $playerTwoGamesWon"
+                    "Games: $displayP1Games - $displayP2Games"
                 }
             }
         }

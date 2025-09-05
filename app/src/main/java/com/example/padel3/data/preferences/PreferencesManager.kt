@@ -86,20 +86,26 @@ class PreferencesManager(private val context: Context) {
 
     // Match History Methods
     suspend fun saveMatchToHistory(match: MatchHistory) {
+        println("DEBUG: saveMatchToHistory called with match ID: ${match.id}")
         context.dataStore.edit { preferences ->
             val currentHistoryJson = preferences[MATCH_HISTORY] ?: "[]"
             val currentHistory = try {
                 json.decodeFromString<List<MatchHistory>>(currentHistoryJson)
             } catch (e: Exception) {
+                println("DEBUG: Error decoding current history: $e")
                 emptyList()
             }
+
+            println("DEBUG: Current history size: ${currentHistory.size}")
 
             // Add new match and maintain size limit
             val updatedHistory = (currentHistory + match)
                 .sortedByDescending { it.date }
                 .take(MAX_HISTORY_SIZE)
 
+            println("DEBUG: Updated history size: ${updatedHistory.size}")
             preferences[MATCH_HISTORY] = json.encodeToString(updatedHistory)
+            println("DEBUG: Match saved to DataStore successfully")
         }
     }
 
@@ -140,8 +146,11 @@ class PreferencesManager(private val context: Context) {
     }
 
     suspend fun clearMatchHistory() {
+        println("DEBUG: PreferencesManager clearMatchHistory called")
         context.dataStore.edit { preferences ->
+            val hadHistory = preferences.contains(MATCH_HISTORY)
             preferences.remove(MATCH_HISTORY)
+            println("DEBUG: Match history cleared, had history before: $hadHistory")
         }
     }
 
