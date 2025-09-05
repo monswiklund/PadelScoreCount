@@ -2,6 +2,7 @@ package com.example.padel3.domain.usecase
 
 import com.example.padel3.domain.model.GameMode
 import com.example.padel3.domain.model.GameState
+import com.example.padel3.domain.model.ScoringVariant
 
 class IncrementScoreUseCase {
     
@@ -28,8 +29,8 @@ class IncrementScoreUseCase {
             GameState.POINTS_FIRST_STEP -> GameState.POINTS_SECOND_STEP
             GameState.POINTS_SECOND_STEP -> GameState.POINTS_THIRD_STEP
             GameState.POINTS_THIRD_STEP -> {
-                // Player wins the game - award game and reset scores
-                return awardGame(state, isPlayerOne)
+                // Handle deuce/advantage scenarios
+                return handleDeuceScenario(state, isPlayerOne)
             }
             else -> playerScore
         }
@@ -76,6 +77,46 @@ class IncrementScoreUseCase {
         )
     }
     
+    private fun handleDeuceScenario(state: GameState, isPlayerOne: Boolean): GameState {
+        val opponentScore = if (isPlayerOne) state.playerTwoScore else state.playerOneScore
+        
+        // If opponent is not at 40, this player wins the game
+        if (opponentScore != GameState.POINTS_THIRD_STEP) {
+            return awardGame(state, isPlayerOne)
+        }
+        
+        // Both players at 40 - handle based on scoring variant
+        return when (state.scoringVariant) {
+            ScoringVariant.GOLDEN_POINT -> {
+                // Golden Point: immediate win for next scorer
+                awardGame(state, isPlayerOne)
+            }
+            ScoringVariant.ADVANTAGE -> {
+                // Traditional advantage scoring
+                when {
+                    state.playerOneHasAdvantage == null -> {
+                        // First deuce - give advantage to scoring player
+                        state.copy(
+                            isDeuceState = true,
+                            playerOneHasAdvantage = isPlayerOne
+                        )
+                    }
+                    state.playerOneHasAdvantage == isPlayerOne -> {
+                        // Player with advantage scores again - wins game
+                        awardGame(state, isPlayerOne)
+                    }
+                    else -> {
+                        // Opponent of advantage holder scores - back to deuce
+                        state.copy(
+                            isDeuceState = true,
+                            playerOneHasAdvantage = null
+                        )
+                    }
+                }
+            }
+        }
+    }
+    
     private fun awardGame(state: GameState, isPlayerOne: Boolean): GameState {
         val newPlayerOneGames = if (isPlayerOne) state.playerOneGamesWon + 1 else state.playerOneGamesWon
         val newPlayerTwoGames = if (isPlayerOne) state.playerTwoGamesWon else state.playerTwoGamesWon + 1
@@ -85,6 +126,8 @@ class IncrementScoreUseCase {
             playerTwoScore = GameState.POINTS_INITIAL,
             playerOneGamesWon = newPlayerOneGames,
             playerTwoGamesWon = newPlayerTwoGames,
+            isDeuceState = false,
+            playerOneHasAdvantage = null,
             gameWinSequence = state.gameWinSequence + isPlayerOne,
             isPlayerOneServing = !state.isPlayerOneServing // Alternate serve every game
         )

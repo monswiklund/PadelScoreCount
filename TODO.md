@@ -7,12 +7,6 @@
   - Location: `app/src/main/java/com/example/padel3/presentation/PadelScoreActivity.kt.kt`
   - Impact: Confusing file structure, potential build issues
 
-- [ ] **Update deprecated APIs**
-  - Replace `VIBRATOR_SERVICE` with `VibratorManager` (API 31+)
-  - Update `SCREEN_BRIGHT_WAKE_LOCK` to `SCREEN_DIM_WAKE_LOCK` 
-  - Update `ACQUIRE_CAUSES_WAKEUP` usage
-  - Location: `PadelScoreActivity.kt:34,41`
-
 - [ ] **Clean up unused code**
   - Remove unused parameter `appName` in `ScoreCounter.kt:42`
   - Remove unused variable `isPlayerOneServing` in `ScoreCounter.kt:59`

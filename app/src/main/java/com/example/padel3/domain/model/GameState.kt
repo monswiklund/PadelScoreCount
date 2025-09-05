@@ -1,5 +1,10 @@
 package com.example.padel3.domain.model
 
+enum class ScoringVariant {
+    ADVANTAGE,    // Traditional advantage scoring
+    GOLDEN_POINT  // Sudden death at deuce
+}
+
 data class GameState(
     val playerOneScore: Int = 0,
     val playerTwoScore: Int = 0,
@@ -14,6 +19,9 @@ data class GameState(
     val gameMode: GameMode = GameMode.VINNARBANA,
     val mexicanoMatchLimit: Int = 24,
     val setsToWinMatch: Int = 1,
+    val scoringVariant: ScoringVariant = ScoringVariant.ADVANTAGE,
+    val isDeuceState: Boolean = false,
+    val playerOneHasAdvantage: Boolean? = null, // null = no advantage, true = P1, false = P2
     val showModeSelector: Boolean = true,
     val showServeSelector: Boolean = false,
     val canUndo: Boolean = false,
