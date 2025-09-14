@@ -3,6 +3,7 @@ package com.example.padel3.domain.usecase
 import com.example.padel3.domain.model.GameMode
 import com.example.padel3.domain.model.GameState
 import com.example.padel3.domain.model.ScoringVariant
+import com.example.padel3.domain.model.SetResult
 
 class IncrementScoreUseCase {
     
@@ -145,6 +146,8 @@ class IncrementScoreUseCase {
         if (isPlayerOne && player1Points >= winningPoints && (player1Points - player2Points) >= minDifference) {
             // Player 1 wins tiebreak — set recorded as 7–6
             val newPlayerOneSets = state.playerOneSetsWon + 1
+            val newCompletedSets = state.completedSets + SetResult(7, 6)
+            println("DEBUG: Player 1 wins tiebreak! Adding SetResult(7, 6). Current completedSets size: ${state.completedSets.size}, new size: ${newCompletedSets.size}")
             return state.copy(
                 playerOneSetsWon = newPlayerOneSets,
                 // store last completed set result for history display
@@ -156,11 +159,14 @@ class IncrementScoreUseCase {
                 playerOneTieBreakPoints = 0,
                 playerTwoTieBreakPoints = 0,
                 showServeSelector = if (newPlayerOneSets >= state.setsToWinMatch) false else false,
-                gameWinSequence = emptyList()
+                gameWinSequence = emptyList(),
+                completedSets = newCompletedSets
             )
         } else if (!isPlayerOne && player2Points >= winningPoints && (player2Points - player1Points) >= minDifference) {
             // Player 2 wins tiebreak — set recorded as 6–7
             val newPlayerTwoSets = state.playerTwoSetsWon + 1
+            val newCompletedSets = state.completedSets + SetResult(6, 7)
+            println("DEBUG: Player 2 wins tiebreak! Adding SetResult(6, 7). Current completedSets size: ${state.completedSets.size}, new size: ${newCompletedSets.size}")
             return state.copy(
                 playerTwoSetsWon = newPlayerTwoSets,
                 // store last completed set result for history display
@@ -172,7 +178,8 @@ class IncrementScoreUseCase {
                 playerOneTieBreakPoints = 0,
                 playerTwoTieBreakPoints = 0,
                 showServeSelector = if (newPlayerTwoSets >= state.setsToWinMatch) false else false,
-                gameWinSequence = emptyList()
+                gameWinSequence = emptyList(),
+                completedSets = newCompletedSets
             )
         }
         
@@ -196,6 +203,10 @@ class IncrementScoreUseCase {
             state.playerOneGamesWon - state.playerTwoGamesWon >= minDifference) {
             // Player 1 wins set — capture final games before resetting
             val newPlayerOneSets = state.playerOneSetsWon + 1
+            val newCompletedSets = state.completedSets + SetResult(state.playerOneGamesWon, state.playerTwoGamesWon)
+            println("DEBUG: Player 1 wins set! Adding SetResult(${state.playerOneGamesWon}, ${state.playerTwoGamesWon})")
+            println("DEBUG: completedSets size before: ${state.completedSets.size}, after: ${newCompletedSets.size}")
+            println("DEBUG: All completed sets: ${newCompletedSets.joinToString { "(${it.p1Games}-${it.p2Games})" }}")
             return state.copy(
                 playerOneSetsWon = newPlayerOneSets,
                 lastCompletedSetP1Games = state.playerOneGamesWon,
@@ -203,13 +214,18 @@ class IncrementScoreUseCase {
                 playerOneGamesWon = 0,
                 playerTwoGamesWon = 0,
                 gameWinSequence = emptyList(),
-                showServeSelector = if (newPlayerOneSets >= state.setsToWinMatch) false else false
+                showServeSelector = if (newPlayerOneSets >= state.setsToWinMatch) false else false,
+                completedSets = newCompletedSets
             )
         } else if (!isPlayerOne &&
             state.playerTwoGamesWon >= gamesNeeded &&
             state.playerTwoGamesWon - state.playerOneGamesWon >= minDifference) {
             // Player 2 wins set — capture final games before resetting
             val newPlayerTwoSets = state.playerTwoSetsWon + 1
+            val newCompletedSets = state.completedSets + SetResult(state.playerOneGamesWon, state.playerTwoGamesWon)
+            println("DEBUG: Player 2 wins set! Adding SetResult(${state.playerOneGamesWon}, ${state.playerTwoGamesWon})")
+            println("DEBUG: completedSets size before: ${state.completedSets.size}, after: ${newCompletedSets.size}")
+            println("DEBUG: All completed sets: ${newCompletedSets.joinToString { "(${it.p1Games}-${it.p2Games})" }}")
             return state.copy(
                 playerTwoSetsWon = newPlayerTwoSets,
                 lastCompletedSetP1Games = state.playerOneGamesWon,
@@ -217,7 +233,8 @@ class IncrementScoreUseCase {
                 playerOneGamesWon = 0,
                 playerTwoGamesWon = 0,
                 gameWinSequence = emptyList(),
-                showServeSelector = if (newPlayerTwoSets >= state.setsToWinMatch) false else false
+                showServeSelector = if (newPlayerTwoSets >= state.setsToWinMatch) false else false,
+                completedSets = newCompletedSets
             )
         }
         

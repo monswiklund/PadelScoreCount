@@ -13,6 +13,9 @@ enum class ResetAction {
     RESET_MATCH   // Reset entire match
 }
 
+@Serializable
+data class SetResult(val p1Games: Int, val p2Games: Int)
+
 data class GameState(
     val playerOneScore: Int = 0,
     val playerTwoScore: Int = 0,
@@ -40,7 +43,9 @@ data class GameState(
     val gameWinSequence: List<Boolean> = emptyList(), // true = player 1 won, false = player 2 won
     // New: remember last completed set’s final games so history can show them
     val lastCompletedSetP1Games: Int = 0,
-    val lastCompletedSetP2Games: Int = 0
+    val lastCompletedSetP2Games: Int = 0,
+    // New: track all completed sets
+    val completedSets: List<SetResult> = emptyList()
 ) {
     companion object {
         const val POINTS_INITIAL = 0

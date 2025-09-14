@@ -5,10 +5,11 @@ import com.example.padel3.domain.model.GameState
 class ResetGameUseCase {
     
     fun resetGame(currentState: GameState): GameState {
-        // Only reset gems if both scores are 0-0 initially (meaning we're resetting from 0-0)
-        val shouldResetGems = currentState.playerOneScore == 0 && currentState.playerTwoScore == 0
+        // Only reset everything if both scores are 0-0 initially (meaning we're resetting from 0-0)
+        val shouldResetEverything = currentState.playerOneScore == 0 && currentState.playerTwoScore == 0
         
-        return if (shouldResetGems) {
+        return if (shouldResetEverything) {
+            println("DEBUG: resetGame - doing full reset, clearing completedSets (had ${currentState.completedSets.size} sets)")
             currentState.copy(
                 playerOneScore = GameState.POINTS_INITIAL,
                 playerTwoScore = GameState.POINTS_INITIAL,
@@ -19,9 +20,12 @@ class ResetGameUseCase {
                 gameWinSequence = emptyList(),
                 // Clear last completed set snapshot when resetting everything
                 lastCompletedSetP1Games = 0,
-                lastCompletedSetP2Games = 0
+                lastCompletedSetP2Games = 0,
+                completedSets = emptyList()
             )
         } else {
+            // Just reset the current game scores, preserve sets and games
+            println("DEBUG: resetGame - preserving completedSets (${currentState.completedSets.size} sets)")
             currentState.copy(
                 playerOneScore = GameState.POINTS_INITIAL,
                 playerTwoScore = GameState.POINTS_INITIAL
@@ -30,6 +34,7 @@ class ResetGameUseCase {
     }
     
     fun resetMatch(currentState: GameState, showModeSelector: Boolean = true): GameState {
+        println("DEBUG: resetMatch - clearing completedSets (had ${currentState.completedSets.size} sets)")
         return currentState.copy(
             playerOneScore = GameState.POINTS_INITIAL,
             playerTwoScore = GameState.POINTS_INITIAL,
@@ -47,11 +52,13 @@ class ResetGameUseCase {
             gameWinSequence = emptyList(),
             // Clear last completed set snapshot for new match
             lastCompletedSetP1Games = 0,
-            lastCompletedSetP2Games = 0
+            lastCompletedSetP2Games = 0,
+            completedSets = emptyList()
         )
     }
     
     fun setGameMode(currentState: GameState, mode: com.example.padel3.domain.model.GameMode): GameState {
+        println("DEBUG: setGameMode called - this will clear completedSets via resetMatch!")
         val resetState = resetMatch(currentState, showModeSelector = false)
         return resetState.copy(
             gameMode = mode,

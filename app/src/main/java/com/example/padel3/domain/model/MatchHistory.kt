@@ -27,7 +27,9 @@ data class MatchHistory(
     val matchSessionId: String = "", // groups multiple saves of the same match
     // New: track last completed set games to avoid showing 0-0 right after set ends
     val lastCompletedSetP1Games: Int = 0,
-    val lastCompletedSetP2Games: Int = 0
+    val lastCompletedSetP2Games: Int = 0,
+    // New: track all completed sets
+    val completedSets: List<SetResult> = emptyList()
 ) {
     companion object {
         fun fromGameState(
@@ -49,7 +51,7 @@ data class MatchHistory(
 
             val now = System.currentTimeMillis()
             val id = now.toString()
-            return MatchHistory(
+            val matchHistory = MatchHistory(
                 id = id,
                 date = now,
                 gameMode = gameState.gameMode,
@@ -67,8 +69,11 @@ data class MatchHistory(
                 winnerIsPlayerOne = winnerIsPlayerOne,
                 matchSessionId = matchSessionId ?: id, // fallback ensures old entries still group uniquely
                 lastCompletedSetP1Games = gameState.lastCompletedSetP1Games,
-                lastCompletedSetP2Games = gameState.lastCompletedSetP2Games
+                lastCompletedSetP2Games = gameState.lastCompletedSetP2Games,
+                completedSets = gameState.completedSets
             )
+
+            return matchHistory
         }
     }
 
@@ -76,15 +81,41 @@ data class MatchHistory(
         return when (gameMode) {
             GameMode.MEXICANO -> "$playerOneScore - $playerTwoScore"
             GameMode.VINNARBANA -> {
-                val displayP1Games = if (playerOneGamesWon == 0 && playerTwoGamesWon == 0 &&
-                    (lastCompletedSetP1Games > 0 || lastCompletedSetP2Games > 0)) lastCompletedSetP1Games else playerOneGamesWon
-                val displayP2Games = if (playerOneGamesWon == 0 && playerTwoGamesWon == 0 &&
-                    (lastCompletedSetP1Games > 0 || lastCompletedSetP2Games > 0)) lastCompletedSetP2Games else playerTwoGamesWon
-
-                if (playerOneSetsWon > 0 || playerTwoSetsWon > 0) {
-                    "Sets: $playerOneSetsWon - $playerTwoSetsWon\nGames: $displayP1Games - $displayP2Games"
+                if (completedSets.isNotEmpty()) {
+                    // For individual set display (when completedSets has only 1 item)
+                    if (completedSets.size == 1) {
+                        val set = completedSets.first()
+                        val winner = if (set.p1Games > set.p2Games) "P1 Won" else "P2 Won"
+                        "Set: ${set.p1Games} - ${set.p2Games}\n$winner"
+                    } else {
+                        // For multiple sets (fallback to original logic)
+                        val setsText = completedSets.mapIndexed { idx, set -> "Set ${idx + 1}: ${set.p1Games} - ${set.p2Games}" }.joinToString("\n")
+                        
+                        // Add current in-progress set if match is incomplete and has games
+                        val currentSetText = if (!isMatchCompleted && (playerOneGamesWon > 0 || playerTwoGamesWon > 0)) {
+                            val currentSetNumber = completedSets.size + 1
+                            "\nSet $currentSetNumber: $playerOneGamesWon - $playerTwoGamesWon (in progress)"
+                        } else ""
+                        
+                        "Sets: $playerOneSetsWon - $playerTwoSetsWon\n$setsText$currentSetText"
+                    }
                 } else {
-                    "Games: $displayP1Games - $displayP2Games"
+                    // Handle incomplete sets (no completed sets but has current games)
+                    if (!isMatchCompleted && (playerOneGamesWon > 0 || playerTwoGamesWon > 0)) {
+                        "Set: $playerOneGamesWon - $playerTwoGamesWon\nIncomplete"
+                    } else {
+                        // Fallback for older matches or matches without completed sets data
+                        val displayP1Games = if (playerOneGamesWon == 0 && playerTwoGamesWon == 0 &&
+                            (lastCompletedSetP1Games > 0 || lastCompletedSetP2Games > 0)) lastCompletedSetP1Games else playerOneGamesWon
+                        val displayP2Games = if (playerOneGamesWon == 0 && playerTwoGamesWon == 0 &&
+                            (lastCompletedSetP1Games > 0 || lastCompletedSetP2Games > 0)) lastCompletedSetP2Games else playerTwoGamesWon
+
+                        if (playerOneSetsWon > 0 || playerTwoSetsWon > 0) {
+                            "Sets: $playerOneSetsWon - $playerTwoSetsWon\nGames: $displayP1Games - $displayP2Games"
+                        } else {
+                            "Games: $displayP1Games - $displayP2Games"
+                        }
+                    }
                 }
             }
         }
