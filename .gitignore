@@ -25,20 +25,40 @@ replay_pid*
 
 # Android specific
 *.iml
-.gradle
+.gradle/
+**/build/
 /local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
 .DS_Store
-/build
 /captures
 .externalNativeBuild
 .cxx
 local.properties
+
+# IDE files
+.idea/
+*.iws
+*.ipr
+
+# APK and other build outputs
+*.apk
+*.aab
+*.dex
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
 
 # Claude-related files
 CLAUDE.md
