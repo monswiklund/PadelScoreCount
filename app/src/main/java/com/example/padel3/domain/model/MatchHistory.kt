@@ -79,7 +79,17 @@ data class MatchHistory(
 
     fun getFormattedScore(): String {
         return when (gameMode) {
-            GameMode.MEXICANO -> "$playerOneScore - $playerTwoScore"
+            GameMode.MEXICANO -> {
+                val scoreText = "Score: $playerOneScore - $playerTwoScore"
+                if (isMatchCompleted && winnerIsPlayerOne != null) {
+                    val winner = if (winnerIsPlayerOne == true) "P1 Won" else "P2 Won"
+                    "$scoreText\n$winner"
+                } else if (!isMatchCompleted) {
+                    "$scoreText\nIncomplete"
+                } else {
+                    scoreText
+                }
+            }
             GameMode.VINNARBANA -> {
                 if (completedSets.isNotEmpty()) {
                     // For individual set display (when completedSets has only 1 item)
